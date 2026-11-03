@@ -18,14 +18,13 @@ Security managers can monitor patrol activity from a centralized dashboard, trac
 8. [Google Sheets Dashboard](#-8-google-sheets-dashboard)
 9. [Telegram Notification System](#-9-telegram-notification-system)
 10. [Key Features](#-10-key-features)
-11. [Installation and Configuration](#-11-installation-and-configuration)
-12. [Repository Structure](#-12-repository-structure)
-13. [Limitations](#️-13-limitations)
-14. [Troubleshooting](#-14-troubleshooting)
-15. [Applications](#-15-applications)
-16. [Future Enhancements](#-16-future-enhancements)
-17. [Project Outcome](#-17-project-outcome)
-18. [License and Author](#-18-license-and-author)
+11. [Installation and Configuration](#-11-installation-and-configuration) 
+12. [Limitations](#️-13-limitations)
+13. [Troubleshooting](#-14-troubleshooting)
+14. [Applications](#-15-applications)
+15. [Future Enhancements](#-16-future-enhancements)
+16. [Project Outcome](#-17-project-outcome)
+17. [License and Author](#-18-license-and-author)
 
 ---
 
