@@ -18,13 +18,13 @@ Security managers can monitor patrol activity from a centralized dashboard, trac
 8. [Google Sheets Dashboard](#-8-google-sheets-dashboard)
 9. [Telegram Notification System](#-9-telegram-notification-system)
 10. [Key Features](#-10-key-features)
-11. [Installation and Configuration](#-11-installation-and-configuration) 
-12. [Limitations](#️-13-limitations)
-13. [Troubleshooting](#-14-troubleshooting)
-14. [Applications](#-15-applications)
-15. [Future Enhancements](#-16-future-enhancements)
-16. [Project Outcome](#-17-project-outcome)
-17. [License and Author](#-18-license-and-author)
+11. [Installation and Configuration](#-11-installation-and-configuration)
+12. [Limitations](#️-12-limitations)
+13. [Troubleshooting](#-13-troubleshooting)
+14. [Applications](#-14-applications)
+15. [Future Enhancements](#-15-future-enhancements)
+16. [Project Outcome](#-16-project-outcome)
+17. [License and Author](#-17-license-and-author)
 
 ---
 
@@ -187,7 +187,7 @@ When the ESP32 is powered on, it:
 
 ### Step 3: Patrol Data Logging
 
-After a valid scan, the ESP32 collects the personnel name, RFID UID, timestamp, checkpoint location, and patrol status, then sends them to Google Apps Script via HTTP. Apps Script stores the record in Google Sheets, creating a centralized digital log.
+After a valid scan, the ESP32 collects the personnel name, RFID UID, checkpoint location, and patrol status, then sends them to Google Apps Script via HTTP. Apps Script adds the date and time when the request arrives and stores the record in Google Sheets, creating a centralized digital log.
 
 ### Step 4: Time-Based Patrol Monitoring
 
@@ -226,13 +226,22 @@ This lets the manager monitor compliance without manually checking registers.
 
 ## ☁️ 7. Google Apps Script and Google Sheets Integration
 
-Google Apps Script is the backend layer between the ESP32 and Google Sheets.
+Google Apps Script is the backend layer between the ESP32 and Google Sheets. The script reads and writes two sheets, and both operations use HTTP GET requests with query parameters:
+
+| Operation | Request parameters | Sheet used |
+|---|---|---|
+| Read personnel database | `?target=database&sts=read` | `RFID_DATABASE` |
+| Write patrol record | `?target=log&sts=write&name=...&uid=...&location=...&status=...` | `RFID_LOG` |
+
+Any other request returns `INVALID REQUEST`. A successful write returns `SUCCESS`.
+
+> Sheet names must match exactly: `RFID_DATABASE` and `RFID_LOG`.
 
 ### A. Personnel Database Retrieval
 
 1. The ESP32 sends a request to the deployed Apps Script URL.
-2. Apps Script reads the registered personnel from Google Sheets.
-3. The data is returned as JSON.
+2. Apps Script reads the `RFID_DATABASE` sheet and skips the header row.
+3. The rows are returned as a JSON array: `[name, uid, chatID]`.
 4. The ESP32 parses it with ArduinoJson and uses it for RFID identification.
 
 ### B. Patrol Data Upload
@@ -240,24 +249,36 @@ Google Apps Script is the backend layer between the ESP32 and Google Sheets.
 On every valid scan:
 
 1. The ESP32 reads the RFID UID and identifies the person.
-2. It obtains the timestamp and checkpoint location.
-3. It sends the record to Apps Script.
-4. Apps Script stores the record in Google Sheets.
+2. It adds the checkpoint location and patrol status.
+3. It sends `name`, `uid`, `location`, and `status` to Apps Script.
+4. Apps Script adds the current date and time (in the script's time zone) and appends the row to `RFID_LOG`.
 
 ### C. Recorded Information
 
 | Field | Description |
 |---|---|
-| Date | Date of the patrol activity. |
-| Time | Time of RFID scanning. |
+| Date | Date the record was received (added by Apps Script). |
+| Time | Time the record was received (added by Apps Script). |
 | Personnel | Identified security staff member. |
 | RFID UID | Unique RFID card ID. |
 | Location | Checkpoint location. |
 | Status | Patrol status: `IN TIME` or `MISSED`. |
 
+At the end of the patrol window the ESP32 also logs an end-of-shift marker, a row with `NA` in the personnel, UID, and status columns.
+
 ### Google Sheets Records
 
 ![Google Sheets Records](google_sheets_records.png)
+
+### Personnel Sheet (`RFID_DATABASE`)
+
+The first row is a header and is skipped by the script. Data starts from row 2:
+
+| Column A | Column B | Column C |
+|---|---|---|
+| Name | RFID UID | Telegram Chat ID |
+
+The RFID UID is read by the firmware in uppercase hex without separators (for example, `A1B2C3D4`).
 
 ---
 
@@ -266,6 +287,8 @@ On every valid scan:
 The dashboard lets the manager review personnel performance and checkpoint activity without reading individual records.
 
 ### Dashboard Features
+
+> The dashboard is built in Google Sheets from the `RFID_LOG` data. The Apps Script only stores and serves records; it does not calculate any statistics.
 
 **1. Personnel-Wise Monitoring**
 
@@ -410,10 +433,10 @@ const long gmtOffset_sec = 19800;         // IST (UTC+5:30)
 ### Google Apps Script Setup
 
 1. Create a Google Spreadsheet.
-2. Create the sheets for the personnel database (name, RFID UID, Telegram Chat ID) and the patrol log.
+2. Create two sheets named exactly `RFID_DATABASE` (columns: Name, RFID UID, Telegram Chat ID, with a header in row 1) and `RFID_LOG` (columns: Date, Time, Personnel, RFID UID, Location, Status).
 3. Open **Extensions → Apps Script** and paste the code from `google_apps_script.gs`.
-4. Deploy as a **Web app** (**Deploy → New deployment**).
-5. Set the access permissions so that the ESP32 can reach the URL (typically "Anyone"; see the security note above).
+4. In **Project Settings**, set the script **time zone** to your local zone (for example, Asia/Kolkata). Logged dates and times use this setting.
+5. Deploy as a **Web app** (**Deploy → New deployment**) with **Execute as: Me** and **Who has access: Anyone**, so the ESP32 can reach the URL (see the security note above).
 6. Copy the deployment URL into the firmware.
 
 > After changing the script, create a **new deployment version**; the old URL keeps running the old code.
@@ -443,6 +466,7 @@ const long gmtOffset_sec = 19800;         // IST (UTC+5:30)
 - **Single checkpoint per unit:** Each ESP32 handles one checkpoint location; covering a facility requires multiple units.
 - **RFID cloning:** Standard RC522 cards (MIFARE Classic) can be cloned, so a scan proves the card was present, not necessarily the person.
 - **Credentials in firmware:** Wi-Fi and bot credentials are stored in the code and must be protected.
+- **Open endpoint:** The Apps Script URL has no authentication. Anyone who has it can add log rows or read the personnel list (including Chat IDs), so keep the URL private.
 - **Apps Script quotas:** Free Google accounts have daily execution limits, which matters for large deployments.
 
 ---
@@ -453,7 +477,8 @@ const long gmtOffset_sec = 19800;         // IST (UTC+5:30)
 |---|---|
 | RC522 not detected | Check SPI wiring and the 3.3 V supply; confirm pin definitions in the code. |
 | Wi-Fi does not connect | Verify SSID and password; ESP32 supports 2.4 GHz networks only. |
-| Wrong timestamps | Check the NTP timezone offset and confirm NTP sync in the Serial Monitor. |
+| Wrong date/time in the log | Set the Apps Script project time zone (Project Settings). For wrong patrol-window behavior, check the NTP timezone offset and NTP sync in the Serial Monitor. |
+| `INVALID REQUEST` or script errors | Check that the sheets are named exactly `RFID_DATABASE` and `RFID_LOG`. |
 | Personnel list not loading | Confirm the Apps Script URL, the deployment access setting, and that the sheet names match the script. |
 | Records not appearing in Sheets | Re-deploy the script as a new version and update the URL in the firmware. |
 | No Telegram messages | Verify the bot token and Chat IDs; each user must press **Start** on the bot first. |
