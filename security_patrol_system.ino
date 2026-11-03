@@ -11,8 +11,8 @@
 #define BUZZER_PIN  25
 
 // ─── WIFI ────────────────────────────────────────────
-#define WIFI_SSID     "JK"
-#define WIFI_PASSWORD "jkkitty@08"
+#define WIFI_SSID     "ENTER_YOUR_WIFI_NAME"
+#define WIFI_PASSWORD "ENTER_YOUR_WIFI_PASSWORD"
 
 // ─── NTP ─────────────────────────────────────────────
 const char* ntpServer = "pool.ntp.org";
@@ -20,12 +20,12 @@ const long  gmtOffset_sec = 19800;
 const int   daylightOffset_sec = 0;
 
 // ─── TELEGRAM ────────────────────────────────────────
-#define BOT_TOKEN "8445767131:AAGW4OiXXtBBZnGr0s7Mgew7p07kv4_J6Ks"
-#define ADMIN_CHAT_ID "6692866909"
+#define BOT_TOKEN "ENTER_YOUR_TELEGRAM_BOT_TOKEN"
+#define ADMIN_CHAT_ID "ENTER_YOUR_ADMIN_CHAT_ID"
 
 // ─── GOOGLE SCRIPT ───────────────────────────────────
 const String GOOGLE_SCRIPT_BASE_URL =
-"https://script.google.com/macros/s/AKfycby9vqCwyVz_ne6uYwAO6xdNuapxErG4f0_NbBKVNeGuZf1Dlyt9jWia8VBrLfP1uuphlw/exec";
+"ENTER_YOUR_GOOGLE_SCRIPT_URL";
 const String LOCATION = "IOT Lab";
 
 // ─── RFID ────────────────────────────────────────────
