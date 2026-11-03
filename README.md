@@ -497,7 +497,7 @@ The system provides a centralized way to monitor patrols, identify missed checkp
 ## 📄 17. License and Author
 
 - **License:** MIT.
-- **Author:** [Jyoshika] — [github.com/KJyoshika]
+- **Author:** Jyoshika — github.com/KJyoshika
 
 ---
 
