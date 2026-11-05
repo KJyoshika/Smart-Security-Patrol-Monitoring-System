@@ -482,7 +482,7 @@ const long gmtOffset_sec = 19800;         // IST (UTC+5:30)
 | Personnel list not loading | Confirm the Apps Script URL, the deployment access setting, and that the sheet names match the script. |
 | Records not appearing in Sheets | Re-deploy the script as a new version and update the URL in the firmware. |
 | No Telegram messages | Verify the bot token and Chat IDs; each user must press **Start** on the bot first. |
-| Valid card rejected | Check that the UID in the sheet matches the scanned UID format (case and separators). |
+| Valid card rejected | Check that the UID in the sheet matches the scanned UID format. |
 
 ---
 
